@@ -1,5 +1,4 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
-mod app;
-mod modules;
-pub use app::PrimeCulator;
+pub mod modules;
+pub mod view;
