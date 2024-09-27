@@ -36,7 +36,7 @@ impl PrimeCulator {
         ui.heading("PrimeCulator");
 
         egui::ComboBox
-            ::from_id_source("select")
+            ::from_id_salt("select")
             .selected_text(&self.mode)
             .show_ui(ui, |ui| {
                 ui.selectable_value(&mut self.mode, "GCD".to_string(), "GCD");
