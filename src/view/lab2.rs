@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use egui::ScrollArea;
 
-use crate::modules::substitution_ciphers::{ caesars, trisemus };
+use crate::{
+    modules::substitution_ciphers::{ caesars, trisemus },
+    utils::count_frequency::count_frequency,
+};
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
@@ -21,7 +24,7 @@ pub struct SubCipher {
 
 impl Default for SubCipher {
     fn default() -> Self {
-        let alphabet = "abcdefghijklmnopqrstuvwxyz .,;".to_owned();
+        let alphabet = "abcdefghijklmnopqrstuvwxyzäöüß .,;".to_owned();
 
         Self {
             mode: "empty!".to_owned(),
@@ -48,34 +51,21 @@ impl SubCipher {
     pub fn update(&mut self, ui: &mut egui::Ui) {
         ui.heading("lab2 ");
 
-        egui::ComboBox
-            ::from_id_salt("select")
-            .selected_text(&self.mode)
-            .show_ui(ui, |ui| {
-                ui.selectable_value(&mut self.mode, "caesars".to_string(), "caesars");
-                ui.selectable_value(&mut self.mode, "trisemus".to_string(), "trisemus");
-            });
+        ui.horizontal(|ui| {
+            egui::ComboBox
+                ::from_id_salt("select")
+                .selected_text(&self.mode)
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut self.mode, "caesars".to_string(), "caesars");
+                    ui.selectable_value(&mut self.mode, "trisemus".to_string(), "trisemus");
+                });
+
+            if ui.button("Выбрать файл").clicked() {
+                self.select_file();
+            }
+        });
 
         ui.separator();
-
-        if ui.button("Выбрать файл").clicked() {
-            self.file_dir = rfd::FileDialog
-                ::new()
-                .add_filter("text", &["txt", "rs", "json", "toml", "md"])
-                .set_title("Выберите файл")
-                .set_directory("C:\\Users\\joper\\Desktop\\Flesha\\rust\\safety2\\Primeculator")
-                .pick_file();
-
-            if let Some(file) = &self.file_dir {
-                // Чтение данных из файла
-                if let Ok(content) = std::fs::read_to_string(file.as_path()) {
-                    self.input = Some(content);
-                    self.file_dir = Some(file.parent().unwrap().to_path_buf());
-                } else {
-                    self.input = Some("Ошибка при чтении файла".to_string());
-                }
-            }
-        }
 
         if let Some(content) = &self.input {
             ui.label(content.len().to_string() + " bytes");
@@ -87,45 +77,19 @@ impl SubCipher {
                 ui.add(egui::DragValue::new(&mut self.shift).range(0..=self.alphabet_length));
             });
         }
-
-        if self.input.is_some() {
-            if ui.button("encrypt").clicked() {
-                match self.mode.as_str() {
-                    "caesars" => {
-                        self.encrypted = caesars(
-                            self.input.clone().unwrap(),
-                            &self.alphabet,
-                            self.shift
-                        );
-                        self.decrypted = caesars(
-                            self.encrypted.clone(),
-                            &self.alphabet,
-                            -self.shift
-                        );
-                    }
-                    "trisemus" => {
-                        self.encrypted = trisemus(
-                            self.input.clone().unwrap(),
-                            self.alphabet.clone(),
-                            "enigma",
-                            4
-                        );
-                        self.decrypted = trisemus(
-                            self.encrypted.clone(),
-                            self.alphabet.clone(),
-                            "enigma",
-                            -4
-                        );
-                    }
-                    _ => {}
+        ui.horizontal(|ui| {
+            if self.input.is_some() {
+                if ui.button("compute").clicked() {
+                    self.compute();
                 }
             }
-        }
-
-        if ui.button("save").clicked() {
-            self.save(&self.encrypted, "encrypted.txt");
-            self.save(&self.decrypted, "decrypted.txt");
-        }
+            if ui.button("save").clicked() {
+                self.save(&self.encrypted, "encrypted.txt");
+                self.save(&self.decrypted, "decrypted.txt");
+                self.save(&count_frequency(self.encrypted.clone()), "encrypted_freq.csv");
+                self.save(&count_frequency(self.decrypted.clone()), "decrypted_freq.csv");
+            }
+        });
 
         ScrollArea::both()
             .auto_shrink(false)
@@ -141,6 +105,48 @@ impl SubCipher {
     fn save(&self, content: &String, filename: &str) {
         if let Some(file) = &self.file_dir {
             std::fs::write(file.join(filename), content).unwrap();
+        }
+    }
+
+    fn compute(&mut self) {
+        match self.mode.as_str() {
+            "caesars" => {
+                self.encrypted = caesars(self.input.clone().unwrap(), &self.alphabet, self.shift);
+                self.decrypted = caesars(self.encrypted.clone(), &self.alphabet, -self.shift);
+            }
+            "trisemus" => {
+                self.encrypted = trisemus(
+                    self.input.clone().unwrap(),
+                    self.alphabet.clone(),
+                    "enigma",
+                    4
+                );
+                self.decrypted = trisemus(
+                    self.encrypted.clone(),
+                    self.alphabet.clone(),
+                    "enigma",
+                    -4
+                );
+            }
+            _ => {}
+        }
+    }
+
+    fn select_file(&mut self) {
+        self.file_dir = rfd::FileDialog
+            ::new()
+            .add_filter("text", &["txt", "rs", "json", "toml", "md"])
+            .set_title("Выберите файл")
+            .set_directory("C:\\Users\\joper\\Desktop\\Flesha\\rust\\safety2\\Primeculator")
+            .pick_file();
+
+        if let Some(file) = &self.file_dir {
+            if let Ok(content) = std::fs::read_to_string(file.as_path()) {
+                self.input = Some(content);
+                self.file_dir = Some(file.parent().unwrap().to_path_buf());
+            } else {
+                self.input = Some("Ошибка при чтении файла".to_string());
+            }
         }
     }
 }
