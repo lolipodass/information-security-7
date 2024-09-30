@@ -60,7 +60,7 @@ impl SubCipher {
                     ui.selectable_value(&mut self.mode, "trisemus".to_string(), "trisemus");
                 });
 
-            if ui.button("Выбрать файл").clicked() {
+            if ui.button("select file").clicked() {
                 self.select_file();
             }
         });
