@@ -2,3 +2,4 @@
 
 pub mod modules;
 pub mod view;
+pub mod utils;
