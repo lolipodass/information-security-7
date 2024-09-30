@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use egui::ScrollArea;
+
 use crate::modules::substitution_ciphers::{ caesars, trisemus };
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -125,15 +127,15 @@ impl SubCipher {
             self.save(&self.decrypted, "decrypted.txt");
         }
 
-        ui.label(format!("encrypted: {}", &self.encrypted));
-        ui.label(format!("decrypted: {}", &self.decrypted));
-
-        //TODO srollable
-        ui.horizontal(|ui| {
-            ui.label(self.input.clone().unwrap_or("file not selected".to_owned()));
-            ui.separator();
-            ui.label(&self.decrypted);
-        });
+        ScrollArea::both()
+            .auto_shrink(false)
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(self.input.clone().unwrap_or("file not selected".to_owned()));
+                    ui.separator();
+                    ui.label(&self.decrypted);
+                });
+            });
     }
 
     fn save(&self, content: &String, filename: &str) {
