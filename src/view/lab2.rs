@@ -4,7 +4,7 @@ use egui::ScrollArea;
 
 use crate::{
     modules::substitution_ciphers::{ caesars, trisemus },
-    utils::count_frequency::count_frequency,
+    utils::{ count_frequency::count_frequency, file::{ read, save } },
 };
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -84,10 +84,18 @@ impl SubCipher {
                 }
             }
             if ui.button("save").clicked() {
-                self.save(&self.encrypted, "encrypted.txt");
-                self.save(&self.decrypted, "decrypted.txt");
-                self.save(&count_frequency(self.encrypted.clone()), "encrypted_freq.csv");
-                self.save(&count_frequency(self.decrypted.clone()), "decrypted_freq.csv");
+                save(&self.encrypted, &self.file_dir, "encrypted.txt");
+                save(&self.decrypted, &self.file_dir, "decrypted.txt");
+                save(
+                    &count_frequency(self.encrypted.clone()),
+                    &self.file_dir,
+                    "encrypted_freq.csv"
+                );
+                save(
+                    &count_frequency(self.decrypted.clone()),
+                    &self.file_dir,
+                    "decrypted_freq.csv"
+                );
             }
         });
 
@@ -100,12 +108,6 @@ impl SubCipher {
                     ui.label(&self.decrypted);
                 });
             });
-    }
-
-    fn save(&self, content: &String, filename: &str) {
-        if let Some(file) = &self.file_dir {
-            std::fs::write(file.join(filename), content).unwrap();
-        }
     }
 
     fn compute(&mut self) {
@@ -140,13 +142,7 @@ impl SubCipher {
             .set_directory("C:\\Users\\joper\\Desktop\\Flesha\\rust\\safety2\\Primeculator")
             .pick_file();
 
-        if let Some(file) = &self.file_dir {
-            if let Ok(content) = std::fs::read_to_string(file.as_path()) {
-                self.input = Some(content);
-                self.file_dir = Some(file.parent().unwrap().to_path_buf());
-            } else {
-                self.input = Some("Ошибка при чтении файла".to_string());
-            }
-        }
+        self.input = Some(read(self.file_dir.as_ref().unwrap()));
+        self.file_dir = self.file_dir.clone().and_then(|p| p.parent().map(PathBuf::from));
     }
 }

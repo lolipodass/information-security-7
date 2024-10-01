@@ -1,0 +1,19 @@
+Hier ist ein Text, der alle Buchstaben
+ des deutschen Alphabets enthält:
+
+"Ein großer, schneller Fuchs springt
+ über einen faulen Hund. Während er
+  fröhlich durch die Wälder läuft,
+ entdeckt er Äpfel, ölige Fische 
+und süße Erdbeeren. Plötzlich kommt
+ein Käfer, der mit einem kleinen
+Zauberstab winkt. Er sagt: 'Schau, 
+wie schön die Welt ist! Lass uns 
+tanzen und lachen, während die
+Sonne untergeht und die Sterne 
+leuchten.' So verbringen sie den 
+Abend mit Freude und Spaß, während
+ die Zeit stillsteht."
+
+Dieser Text enthält alle
+ Buchstaben des deutschen Alphabets!
