@@ -24,7 +24,7 @@ pub struct SubCipher {
 
 impl Default for SubCipher {
     fn default() -> Self {
-        let alphabet = "abcdefghijklmnopqrstuvwxyzäöüß .,;".to_owned();
+        let alphabet = "abcdefghijklmnopqrstuvwxyzäöüß .,;:".to_owned();
 
         Self {
             mode: "empty!".to_owned(),
@@ -121,13 +121,13 @@ impl SubCipher {
                     self.input.clone().unwrap(),
                     self.alphabet.clone(),
                     "enigma",
-                    4
+                    5
                 );
                 self.decrypted = trisemus(
                     self.encrypted.clone(),
                     self.alphabet.clone(),
                     "enigma",
-                    -4
+                    -5
                 );
             }
             _ => {}
