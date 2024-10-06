@@ -8,15 +8,17 @@ pub fn count_frequency(s: String) -> String {
         freq.insert(letter, count + 1);
     }
 
-    let mut content = format!("Char,Amt\n");
+    let mut content = format!("Char\tAmt\n");
 
     for (key, value) in freq {
         let val = match key {
             '\n' => "\\n",
             '\r' => "\\r",
+            '"' => "\\\"",
+            // '\'' => "\\'",
             _ => &key.to_string(),
         };
-        content.push_str(&format!("{},{}\n", val, value));
+        content.push_str(&format!("{}\t{}\n", val, value));
     }
     content
 }
