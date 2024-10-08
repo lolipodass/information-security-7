@@ -1,10 +1,11 @@
-use primeculator::view::{ lab1::PrimeCulator, lab2::SubCipher };
+use primeculator::view::{ lab1::PrimeCulator, lab2::SubCipher, lab3::TransCipher };
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct PrimeCulatorBase {
     lab1: PrimeCulator,
     lab2: SubCipher,
+    lab3: TransCipher,
 }
 
 impl Default for PrimeCulatorBase {
@@ -12,6 +13,7 @@ impl Default for PrimeCulatorBase {
         Self {
             lab1: PrimeCulator::default(),
             lab2: SubCipher::default(),
+            lab3: TransCipher::default(),
         }
     }
 }
@@ -48,6 +50,7 @@ impl eframe::App for PrimeCulatorBase {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.collapsing("lab 1", |ui| { self.lab1.update(ui) });
             ui.collapsing("lab 2", |ui| { self.lab2.update(ui) });
+            ui.collapsing("lab 3", |ui| { self.lab3.update(ui) });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 egui::warn_if_debug_build(ui);
