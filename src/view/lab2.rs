@@ -138,7 +138,7 @@ impl SubCipher {
         self.file_dir = rfd::FileDialog
             ::new()
             .add_filter("text", &["txt", "rs", "json", "toml", "md"])
-            .set_title("Выберите файл")
+            .set_title("select file")
             .set_directory("C:\\Users\\joper\\Desktop\\Flesha\\rust\\safety2\\Primeculator")
             .pick_file();
 
