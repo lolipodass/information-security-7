@@ -15,7 +15,6 @@ pub fn count_frequency(s: String) -> String {
             '\n' => "\\n",
             '\r' => "\\r",
             '"' => "\\\"",
-            // '\'' => "\\'",
             _ => &key.to_string(),
         };
         content.push_str(&format!("{}\t{}\n", val, value));
