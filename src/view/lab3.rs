@@ -3,8 +3,13 @@ use std::path::PathBuf;
 use egui::ScrollArea;
 
 use crate::{
-    modules::transposition_ciphers::{ route_permutation_decrypt, route_permutation_encrypt },
-    utils::file::read,
+    modules::transposition_ciphers::{
+        double_permutation_decrypt,
+        double_permutation_encrypt,
+        route_permutation_decrypt,
+        route_permutation_encrypt,
+    },
+    utils::{ count_frequency::count_frequency, file::{ read, save } },
 };
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -13,7 +18,8 @@ pub struct TransCipher {
     mode: String,
     input: Option<String>,
     file_dir: Option<PathBuf>,
-    shift: i32,
+    key_word1: String,
+    key_word2: String,
     encrypted: String,
     decrypted: String,
     #[serde(skip)]
@@ -30,7 +36,8 @@ impl Default for TransCipher {
             mode: "empty!".to_owned(),
             input: None,
             file_dir: None,
-            shift: 1,
+            key_word1: "".to_owned(),
+            key_word2: "".to_owned(),
             encrypted: "".to_owned(),
             decrypted: "".to_owned(),
             alphabet: alphabet.clone(),
@@ -83,10 +90,15 @@ impl TransCipher {
 
         if self.mode == "double" {
             ui.horizontal(|ui| {
-                ui.label("shift: ");
-                ui.add(egui::DragValue::new(&mut self.shift).range(0..=self.alphabet_length));
+                ui.label("keyword1: ");
+                ui.text_edit_singleline(&mut self.key_word1);
+            });
+            ui.horizontal(|ui| {
+                ui.label("keyword2: ");
+                ui.text_edit_singleline(&mut self.key_word2);
             });
         }
+
         ui.horizontal(|ui| {
             if self.input.is_some() {
                 if ui.button("compute").clicked() {
@@ -94,6 +106,18 @@ impl TransCipher {
                 }
             }
             if ui.button("save").clicked() {
+                save(&self.encrypted, &self.file_dir, "encrypted.txt");
+                save(&self.decrypted, &self.file_dir, "decrypted.txt");
+                save(
+                    &count_frequency(self.encrypted.clone()),
+                    &self.file_dir,
+                    "encrypted_freq.csv"
+                );
+                save(
+                    &count_frequency(self.decrypted.clone()),
+                    &self.file_dir,
+                    "decrypted_freq.csv"
+                );
             }
         });
 
@@ -115,10 +139,19 @@ impl TransCipher {
             "single" => {
                 self.encrypted = route_permutation_encrypt(self.input.clone().unwrap());
                 self.decrypted = route_permutation_decrypt(self.encrypted.clone());
-
-                // self.encrypted = split_into_blocks(self.input.clone().unwrap(), 16).join(",");
             }
-            "double  " => {}
+            "double" => {
+                self.encrypted = double_permutation_encrypt(
+                    self.input.clone().unwrap(),
+                    self.key_word1.clone(),
+                    self.key_word2.clone()
+                );
+                self.decrypted = double_permutation_decrypt(
+                    self.encrypted.clone(),
+                    self.key_word1.clone(),
+                    self.key_word2.clone()
+                );
+            }
             _ => {}
         }
     }
