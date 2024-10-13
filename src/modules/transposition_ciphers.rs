@@ -134,3 +134,36 @@ fn get_indexes(key_word: String) -> Vec<usize> {
         })
         .collect::<Vec<usize>>()
 }
+
+#[test]
+fn get_indexes_test() {
+    assert_eq!(get_indexes("abc".to_string()), vec![0, 1, 2]);
+    assert_eq!(get_indexes("cba".to_string()), vec![2, 1, 0]);
+    assert_eq!(get_indexes("things".to_string()), vec![5, 1, 2, 3, 0, 4]);
+    assert_eq!(get_indexes("some".to_string()), vec![3, 2, 1, 0]);
+    assert_eq!(get_indexes("2310".to_string()), vec![2, 3, 1, 0]);
+    assert_eq!(get_indexes("423051".to_string()), vec![4, 2, 3, 0, 5, 1]);
+}
+
+#[test]
+fn double_permutation_test() {
+    let keyword1 = "1320".to_string();
+    let keyword2 = "423051".to_string();
+    let text = "test message with_different symb01s for \n complex testing".to_string();
+    let encrypted = double_permutation_encrypt(text.clone(), keyword1.clone(), keyword2.clone());
+    let decrypted = double_permutation_decrypt(encrypted.clone(), keyword1, keyword2)
+        .trim()
+        .to_string();
+    assert_eq!(decrypted, text);
+}
+
+#[test]
+fn route_permutation_test() {
+    let text = "test message with_different symb01s for \n complex testing".to_string();
+    let encrypted = route_permutation_encrypt(text.clone());
+    let decrypted = route_permutation_decrypt(encrypted.clone())
+        .trim()
+        .to_string();
+    assert_eq!(decrypted, text);
+}
+
