@@ -36,3 +36,11 @@ pub fn enigma_cipher(text: String, start_positions: (i32, i32, i32)) -> String {
     }
     res
 }
+
+#[test]
+fn test_enigma() {
+    let text = "AAAFFАВАВ";
+    let encrypted = enigma_cipher(text.to_string(), (0, 0, 0));
+    let decrypted = enigma_cipher(encrypted, (0, 0, 0));
+    assert_eq!(text, decrypted);
+}

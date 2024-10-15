@@ -11,3 +11,4 @@ target_wasm
 
 *.csv
 *.txt
+graphs.xlsx

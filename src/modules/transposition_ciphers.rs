@@ -161,9 +161,6 @@ fn double_permutation_test() {
 fn route_permutation_test() {
     let text = "test message with_different symb01s for \n complex testing".to_string();
     let encrypted = route_permutation_encrypt(text.clone());
-    let decrypted = route_permutation_decrypt(encrypted.clone())
-        .trim()
-        .to_string();
+    let decrypted = route_permutation_decrypt(encrypted.clone()).trim().to_string();
     assert_eq!(decrypted, text);
 }
-
