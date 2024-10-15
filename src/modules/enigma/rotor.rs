@@ -18,32 +18,35 @@ impl Rotor {
     }
     pub fn get(&self, char: char) -> char {
         let char = char.to_ascii_uppercase();
-        let position = self.initial_alphabet
-            .chars()
-            .position(|x| x == char)
-            .unwrap();
+        let position = self.initial_alphabet.chars().position(|x| x == char);
 
-        let index = (position as i32) + self.shift_count;
+        match position {
+            Some(pos) => {
+                let index = (pos as i32) + self.shift_count;
 
-        self.alphabet
-            .chars()
-            .nth(index.rem_euclid(self.alphabet.len() as i32) as usize)
-            .unwrap()
+                self.alphabet
+                    .chars()
+                    .nth(index.rem_euclid(self.alphabet.len() as i32) as usize)
+                    .expect("[Rotor] - Index out of bounds")
+            }
+            None => char,
+        }
     }
 
     pub fn get_back(&self, char: char) -> char {
         let char = char.to_ascii_uppercase();
-        let position = self.alphabet
-            .chars()
-            .position(|x| x == char)
-            .unwrap();
+        let position = self.alphabet.chars().position(|x| x == char);
+        match position {
+            Some(pos) => {
+                let index = (pos as i32) - self.shift_count;
 
-        let index = (position as i32) - self.shift_count;
-
-        self.initial_alphabet
-            .chars()
-            .nth(index.rem_euclid(self.initial_alphabet.len() as i32) as usize)
-            .unwrap()
+                self.initial_alphabet
+                    .chars()
+                    .nth(index.rem_euclid(self.initial_alphabet.len() as i32) as usize)
+                    .expect("[Rotor] - Index out of bounds")
+            }
+            None => char,
+        }
     }
     pub fn rotate(&mut self) {
         self.shift_count += self.shift;
