@@ -11,15 +11,15 @@ use super::consts::{
     SBOXES,
 };
 
-pub fn encrypt_des(input: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+pub fn encrypt_des(input: &Vec<u8>, key: &Vec<u8>) -> Vec<u8> {
     compute(input, key, false)
 }
 
-pub fn decrypt_des(input: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+pub fn decrypt_des(input: &Vec<u8>, key: &Vec<u8>) -> Vec<u8> {
     compute(input, key, true)
 }
 
-fn compute(input: Vec<u8>, key: Vec<u8>, decrypt: bool) -> Vec<u8> {
+fn compute(input: &Vec<u8>, key: &Vec<u8>, decrypt: bool) -> Vec<u8> {
     let mut res = Vec::new();
 
     //key generation
@@ -68,11 +68,12 @@ fn compute(input: Vec<u8>, key: Vec<u8>, decrypt: bool) -> Vec<u8> {
 
         block_value = permutation(block_value, &BLOCK_PERMUTATIONS[1]);
 
-        println!("block_value {:064b}", block_value);
         res.append(&mut u64_to_u8(block_value));
-        println!("res {:?}", res);
     }
 
+    if let Some(last_non_zero_index) = res.iter().rposition(|&x| x != 0) {
+        res.truncate(last_non_zero_index + 1);
+    }
     res
 }
 
@@ -128,15 +129,11 @@ fn shift_left(key: u64, shift: u8) -> u64 {
 
 #[test]
 fn test_des() {
-    let text = vec![0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
-    let key = vec![0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
-    // let text = "FFFFFFFF".as_bytes().to_vec();
-    // let key = "FFFFFFFF".as_bytes().to_vec();
-    // let text = "ABCDFGHI".as_bytes().to_vec();
-    // let key = "bimbambo".as_bytes().to_vec();
+    let text = "testi".as_bytes().to_vec();
+    let key = "besti".as_bytes().to_vec();
 
-    let encrypted = encrypt_des(text.clone(), key.clone());
-    let decrypted = decrypt_des(encrypted.clone(), key);
+    let encrypted = encrypt_des(&text, &key);
+    let decrypted = decrypt_des(&encrypted, &key);
     assert_eq!(text, decrypted);
 }
 
