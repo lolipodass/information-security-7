@@ -2,3 +2,4 @@ pub mod number_utils;
 pub mod substitution_ciphers;
 pub mod transposition_ciphers;
 pub mod enigma;
+pub mod des;
