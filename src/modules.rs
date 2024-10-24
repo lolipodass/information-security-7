@@ -3,3 +3,4 @@ pub mod substitution_ciphers;
 pub mod transposition_ciphers;
 pub mod enigma;
 pub mod des;
+pub mod generators;
