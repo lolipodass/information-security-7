@@ -4,6 +4,7 @@ use primeculator::view::{
     lab3::TransCipher,
     lab4::EnigmaCipher,
     lab5::DESChipher,
+    lab6::PRSGenerators,
 };
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -14,6 +15,7 @@ pub struct PrimeCulatorBase {
     lab3: TransCipher,
     lab4: EnigmaCipher,
     lab5: DESChipher,
+    lab6: PRSGenerators,
 }
 
 impl Default for PrimeCulatorBase {
@@ -24,6 +26,7 @@ impl Default for PrimeCulatorBase {
             lab3: TransCipher::default(),
             lab4: EnigmaCipher::default(),
             lab5: DESChipher::default(),
+            lab6: PRSGenerators::default(),
         }
     }
 }
@@ -63,6 +66,7 @@ impl eframe::App for PrimeCulatorBase {
             ui.collapsing("lab 3", |ui| { self.lab3.update(ui) });
             ui.collapsing("lab 4", |ui| { self.lab4.update(ui) });
             ui.collapsing("lab 5", |ui| { self.lab5.update(ui) });
+            ui.collapsing("lab 6", |ui| { self.lab6.update(ui) });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 egui::warn_if_debug_build(ui);
