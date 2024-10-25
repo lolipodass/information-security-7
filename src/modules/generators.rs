@@ -1,11 +1,11 @@
-pub fn bbs(n: u8, seed: u8, amount: u32) -> String {
+pub fn bbs(n: u16, seed: u16, amount: u32) -> String {
+    let n: u32 = n.into();
     let mut res = String::with_capacity(amount as usize);
-    let n: u16 = n.into();
 
-    let mut prev = (seed as u16).pow(2) % n;
+    let mut prev = (seed as u32).pow(2) % n;
 
     for _ in 0..amount {
-        prev = (prev as u16).pow(2) % n;
+        prev = (prev as u32).pow(2) % n;
         res.push_str(&(prev & 1).to_string());
     }
 
