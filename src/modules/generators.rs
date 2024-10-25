@@ -1,12 +1,13 @@
-pub fn bbs(n: u16, seed: u16, amount: u32) -> String {
+pub fn bbs(n: u16, seed: u16, amount: u32) -> Vec<u8> {
     let n: u32 = n.into();
-    let mut res = String::with_capacity(amount as usize);
+    let mut res = vec![0u8;((amount+7) / 8 )as usize];
 
     let mut prev = (seed as u32).pow(2) % n;
 
-    for _ in 0..amount {
+    for i in 0..amount {
         prev = (prev as u32).pow(2) % n;
-        res.push_str(&(prev & 1).to_string());
+        let bit = (prev & 1) << (7 - (i % 8));
+        res[(i / 8) as usize] |= bit as u8;
     }
 
     res
@@ -47,10 +48,10 @@ pub fn rc4(text: Vec<u8>, n: u8, key: Vec<u8>) -> Vec<u8> {
 #[test]
 fn test_bbs() {
     let test1 = bbs(2, 1, 10);
-    assert_eq!(test1, "1111111111");
+    assert_eq!(test1, vec![0b11111111, 0b11000000]);
 
     let test2 = bbs(209, 3, 10);
-    assert_eq!(test2, "1000001011");
+    assert_eq!(test2, vec![0b10000010, 0b11000000]);
 }
 
 #[test]
