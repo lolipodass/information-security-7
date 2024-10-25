@@ -86,7 +86,11 @@ impl TransCipher {
             ui.label(content.len().to_string() + " bytes");
         }
 
-        ui.text_edit_singleline(self.input.as_mut().unwrap());
+        if self.input.is_none() {
+            ui.label("input: ");
+            self.input = Some("".to_owned());
+            ui.text_edit_singleline(self.input.as_mut().unwrap());
+        }
 
         if self.mode == "double" {
             ui.horizontal(|ui| {
