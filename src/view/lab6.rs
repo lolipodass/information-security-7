@@ -19,7 +19,7 @@ impl Default for PRSGenerators {
             n: 2,
             seed: 1,
             amount: 10,
-            result: String::new(),
+            result: Vec,
         }
     }
 }
