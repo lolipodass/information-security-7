@@ -1,14 +1,16 @@
-use crate::modules::generators::bbs;
+use crate::modules::generators::{ bbs, rc4 };
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct PRSGenerators {
     input: String,
     key: String,
-    n: u16,
+    bbs_n: u16,
+    rc4_n: u8,
     seed: u16,
     amount: u32,
-    result: String,
+    encrypted: Vec<u8>,
+    result: Vec<u8>,
 }
 
 impl Default for PRSGenerators {
@@ -16,10 +18,12 @@ impl Default for PRSGenerators {
         Self {
             input: String::new(),
             key: String::new(),
-            n: 2,
+            bbs_n: 2,
+            rc4_n: 1,
             seed: 1,
             amount: 10,
-            result: Vec,
+            encrypted: Vec::new(),
+            result: Vec::new(),
         }
     }
 }
@@ -35,20 +39,47 @@ impl PRSGenerators {
 
     pub fn update(&mut self, ui: &mut egui::Ui) {
         ui.heading("lab6");
+        ui.label("BBS");
         ui.horizontal(|ui| {
             ui.label("n:");
-            ui.add(egui::DragValue::new(&mut self.n));
+            ui.add(egui::DragValue::new(&mut self.bbs_n));
             ui.label("seed:");
             ui.add(egui::DragValue::new(&mut self.seed));
             ui.label("amount:");
             ui.add(egui::DragValue::new(&mut self.amount).range(0..=10000));
         });
 
-        if ui.button("bbs").clicked() {
-            self.result = bbs(self.n, self.seed, self.amount);
+        if ui.button("BBS").clicked() {
+            self.result = bbs(self.bbs_n, self.seed, self.amount);
+        }
+
+        ui.horizontal(|ui| {
+            ui.label("key:");
+            ui.text_edit_singleline(&mut self.key);
+            ui.label("input:");
+            ui.text_edit_singleline(&mut self.input);
+            ui.label("n:");
+            ui.add(egui::DragValue::new(&mut self.rc4_n));
+        });
+        if ui.button("RC4").clicked() {
+            self.encrypted = rc4(
+                self.input.clone().into_bytes(),
+                self.rc4_n,
+                self.key.clone().into_bytes()
+            );
+
+            self.result = rc4(self.encrypted.clone(), self.rc4_n, self.key.clone().into_bytes());
+        }
+
+        if ui.button("clear").clicked() {
+            self.result = Vec::new();
         }
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.heading(&self.result.to_string());
+            ui.horizontal(|ui| {
+                ui.heading(String::from_utf8_lossy(&self.encrypted));
+                ui.separator();
+                ui.heading(String::from_utf8_lossy(&self.result));
+            })
         });
     }
 }
