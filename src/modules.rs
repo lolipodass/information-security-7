@@ -4,3 +4,4 @@ pub mod transposition_ciphers;
 pub mod enigma;
 pub mod des;
 pub mod generators;
+pub mod knapsack_cipher;
