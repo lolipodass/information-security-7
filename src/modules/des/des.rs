@@ -1,6 +1,8 @@
 #![allow(warnings)]
 use std::{ mem::swap, ops::Range, vec };
 
+use crate::utils::conversions::{ u64_to_u8, vec_u8_to_u64 };
+
 use super::consts::{
     EXPAND,
     F_PERMUTATION,
@@ -23,7 +25,7 @@ fn compute(input: &Vec<u8>, key: &Vec<u8>, decrypt: bool) -> Vec<u8> {
     let mut res = Vec::new();
 
     //key generation
-    let key = permutation(u8_to_u64(key.clone()), &INITIAL_KEY_PERMUTATION);
+    let key = permutation(vec_u8_to_u64(key.clone()), &INITIAL_KEY_PERMUTATION);
 
     let mut l_key = (key >> 36) & 0xff_ffff;
     let mut r_key = (key >> 8) & 0xff_ffff;
@@ -42,7 +44,7 @@ fn compute(input: &Vec<u8>, key: &Vec<u8>, decrypt: bool) -> Vec<u8> {
     }
 
     for block in input.chunks(8) {
-        let mut block_value = u8_to_u64(block.to_vec());
+        let mut block_value = vec_u8_to_u64(block.to_vec());
 
         block_value = permutation(block_value, &BLOCK_PERMUTATIONS[0]);
 
@@ -95,16 +97,6 @@ fn f_function(block: u64, key: u64) -> u64 {
     permutation(res << 32, &F_PERMUTATION) >> 32
 }
 
-fn u8_to_u64(input: Vec<u8>) -> u64 {
-    let mut block_bytes = [0u8; 8];
-    block_bytes[..input.len()].copy_from_slice(input.as_ref());
-    u64::from_be_bytes(block_bytes)
-}
-
-fn u64_to_u8(input: u64) -> Vec<u8> {
-    input.to_be_bytes().to_vec()
-}
-
 fn permutation(input: u64, table: &[u8]) -> u64 {
     let mut res = 0u64;
 
@@ -147,14 +139,4 @@ fn test_permutation() {
         res,
         0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000u64
     );
-}
-
-#[test]
-fn test_u64to_u8() {
-    let input = 0x4100000000000000u64;
-
-    println!("input: {:X}", input);
-    println!("input: {:?}", input.to_be_bytes());
-    let res = u64_to_u8(input);
-    assert_eq!(res, vec![0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 }
