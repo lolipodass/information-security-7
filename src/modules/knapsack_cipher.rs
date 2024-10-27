@@ -1,4 +1,4 @@
-use primitive_types::U256;
+use num_bigint::BigUint;
 use rand::{ thread_rng, Rng };
 
 use super::number_utils::mod_inverse;
@@ -88,7 +88,10 @@ impl KnapsackCipher {
     }
 
     fn multiplication(a: u128, b: u128, n: u128) -> u128 {
-        ((U256::from(a) * U256::from(b)) % U256::from(n)).as_u128()
+        // res.try_into().unwrap()
+        ((BigUint::from(a) * BigUint::from(b)) % BigUint::from(n))
+            .try_into()
+            .expect("cant be bigger than u128, because n is u128")
     }
 
     fn normal_sequence(super_sequence: Vec<u128>, a: u128, n: u128) -> Vec<u128> {
