@@ -3,7 +3,9 @@ use rand::{ thread_rng, Rng };
 
 use super::number_utils::mod_inverse;
 
-struct KnapsackCipher {
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(default)]
+pub struct KnapsackCipher {
     super_seq: Vec<u128>,
     normal_seq: Vec<u128>,
     a: u128,
@@ -12,8 +14,14 @@ struct KnapsackCipher {
     size: u8,
 }
 
+impl Default for KnapsackCipher {
+    fn default() -> Self {
+        Self::new(8)
+    }
+}
+
 impl KnapsackCipher {
-    fn new(size: u8) -> Self {
+    pub fn new(size: u8) -> Self {
         let mut rand = thread_rng();
 
         let super_seq = Self::superincreasing_sequence(size);
