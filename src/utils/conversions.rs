@@ -25,6 +25,16 @@ pub fn u128_to_u8(input: u128) -> Vec<u8> {
     input.to_be_bytes().to_vec()
 }
 
+pub fn vec_u8_to_u16(input: Vec<u8>) -> u16 {
+    let mut block_bytes = [0u8; 2];
+    block_bytes[..input.len()].copy_from_slice(input.as_ref());
+    u16::from_be_bytes(block_bytes)
+}
+
+pub fn u16_to_u8(input: u16) -> Vec<u8> {
+    input.to_be_bytes().to_vec()
+}
+
 #[test]
 fn test_vec_u8_to_u64() {
     let input = vec![0x41, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10];
