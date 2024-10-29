@@ -89,6 +89,7 @@ impl RSA {
         let mut attempts = 0;
 
         while attempts < MAX_ATTEMPTS {
+            attempts += 1;
             let mut e = rand.gen_biguint_range(&BigUint::one(), phi);
             if let Some(d) = mod_inverse_big(e.to_bigint().unwrap(), phi.to_bigint().unwrap()) {
                 if e != d.to_biguint().unwrap() {
