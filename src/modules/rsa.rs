@@ -46,7 +46,7 @@ impl RSA {
                     q,
                     n,
                     e,
-                    d: d,
+                    d,
                     block_size: key_size / 8,
                 };
             }
@@ -54,7 +54,7 @@ impl RSA {
     }
 
     pub fn encrypt(&self, text: &[u8]) -> Vec<u8> {
-        let mut res = Vec::new();
+        let mut res = Vec::with_capacity(text.len());
 
         for block in text.chunks(self.block_size) {
             let mut val = BigUint::from_bytes_be(block).modpow(&self.e, &self.n).to_bytes_be();
@@ -67,18 +67,16 @@ impl RSA {
 
         res
     }
+
     pub fn decrypt(&self, encrypted: &[u8]) -> Vec<u8> {
-        let mut res = Vec::new();
-
-        for block in encrypted.chunks(self.block_size + 1) {
-            let val = BigUint::from_bytes_be(block).modpow(&self.d, &self.n);
-
-            res.append(&mut val.to_bytes_be());
-        }
-
-        res
+        encrypted
+            .chunks(self.block_size + 1)
+            .flat_map(|block| {
+                let val = BigUint::from_bytes_be(block).modpow(&self.d, &self.n);
+                val.to_bytes_be()
+            })
+            .collect()
     }
-
     fn generate_primes<R: Rng>(rand: &mut R, key_size: usize) -> (BigUint, BigUint) {
         let p = rand.gen_prime_exact(key_size / 2, None);
         // Generate q slightly larger to ensure n is adequately sized
@@ -90,20 +88,15 @@ impl RSA {
         const MAX_ATTEMPTS: usize = 100;
         let mut attempts = 0;
 
-        loop {
-            attempts += 1;
-
-            let e = rand.gen_biguint_range(&BigUint::one(), phi);
+        while attempts < MAX_ATTEMPTS {
+            let mut e = rand.gen_biguint_range(&BigUint::one(), phi);
             if let Some(d) = mod_inverse_big(e.to_bigint().unwrap(), phi.to_bigint().unwrap()) {
                 if e != d.to_biguint().unwrap() {
                     return Some((e, d.to_biguint().unwrap()));
                 }
             }
-
-            if attempts >= MAX_ATTEMPTS {
-                return None;
-            }
         }
+        None
     }
 }
 
