@@ -1,3 +1,7 @@
+use num_bigint::BigInt;
+use num_traits::One;
+use num_traits::Euclid;
+
 pub fn calculate_gcd(a: i32, b: i32) -> i32 {
     let mut a = a;
     let mut b = b;
@@ -11,7 +15,6 @@ pub fn calculate_gcd(a: i32, b: i32) -> i32 {
 
     a
 }
-
 pub fn find_prime_numbers(a: i32, b: i32) -> Vec<i32> {
     let mut res: Vec<i32> = Vec::new();
 
@@ -37,9 +40,6 @@ pub fn mod_inverse(a: u128, n: u128) -> Option<u128> {
     }
 }
 
-///returns (gcd, x, y)
-///
-///where a * x + b * y = gcd
 pub fn gcd_bezout(a: i128, b: i128) -> (i128, i128, i128) {
     let mut x = 1;
     let mut y = 0;
@@ -56,6 +56,42 @@ pub fn gcd_bezout(a: i128, b: i128) -> (i128, i128, i128) {
     }
 
     (a, x, y)
+}
+
+pub fn mod_inverse_big(a: BigInt, n: BigInt) -> Option<BigInt> {
+    let (gcd, x, _) = gcd_bezout_big(a, n.clone());
+    if gcd == BigInt::one() {
+        Some(x.rem_euclid(&n))
+    } else {
+        None
+    }
+}
+
+pub fn gcd_bezout_big(a: BigInt, b: BigInt) -> (BigInt, BigInt, BigInt) {
+    let mut x = BigInt::one();
+    let mut y = BigInt::ZERO;
+    let mut x1 = BigInt::ZERO;
+    let mut y1 = BigInt::one();
+
+    let mut a = a;
+    let mut b = b;
+    while b != BigInt::ZERO {
+        let q = &a / &b;
+        let temp_x = x.clone();
+        let temp_y = y.clone();
+
+        x = x1.clone();
+        y = y1.clone();
+
+        x1 = temp_x - &q * &x1;
+        y1 = temp_y - &q * &y1;
+
+        let temp_a = a.clone();
+        a = b.clone();
+        b = temp_a - &q * &b;
+    }
+
+    (a.clone(), x.clone(), y.clone())
 }
 
 #[test]
