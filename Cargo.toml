@@ -25,7 +25,10 @@ rfd = "0.15.0"
 rand = "0.8.5"
 base64 = "0.22.1"
 egui_extras = "0.29.1"
-num-bigint = "0.4.6"
+egui_plot = "0.29.0"
+num-bigint = { version = "0.4.3", features = ["serde", "rand"] }
+num-prime = "0.4.4"
+num-traits = "0.2.19"
 [dev-dependencies]
 criterion = "0.5.1"
 
