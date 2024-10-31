@@ -5,6 +5,7 @@ use caesars::benchmark_caesars;
 use des::{ des_decrypt_benchmark, des_encrypt_benchmark };
 use double_permutation::benchmark_double_permutation;
 use enigma::enigma_benchmark;
+use knapsack::knapsack_benchmark;
 use rc4::rc4_benchmark;
 use route::benchmark_route_permutation;
 use trisemus::benchmark_trisemus;
@@ -16,6 +17,7 @@ mod route;
 mod double_permutation;
 mod des;
 mod rc4;
+mod knapsack;
 
 criterion_group!(
     benches,
@@ -26,6 +28,7 @@ criterion_group!(
     benchmark_double_permutation,
     des_decrypt_benchmark,
     des_encrypt_benchmark,
-    rc4_benchmark
+    rc4_benchmark,
+    knapsack_benchmark
 );
 criterion_main!(benches);
