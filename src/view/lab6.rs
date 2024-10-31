@@ -11,6 +11,7 @@ pub struct PRSGenerators {
     amount: u32,
     encrypted: Vec<u8>,
     result: Vec<u8>,
+    result_bbs: String,
 }
 
 impl Default for PRSGenerators {
@@ -24,6 +25,7 @@ impl Default for PRSGenerators {
             amount: 10,
             encrypted: Vec::new(),
             result: Vec::new(),
+            result_bbs: String::new(),
         }
     }
 }
@@ -50,7 +52,7 @@ impl PRSGenerators {
         });
 
         if ui.button("BBS").clicked() {
-            self.result = bbs(self.bbs_n, self.seed, self.amount);
+            self.result_bbs = format!("{:?}", bbs(self.bbs_n, self.seed, self.amount));
         }
 
         ui.horizontal(|ui| {
@@ -79,7 +81,9 @@ impl PRSGenerators {
                 ui.heading(String::from_utf8_lossy(&self.encrypted));
                 ui.separator();
                 ui.heading(String::from_utf8_lossy(&self.result));
-            })
+            });
+            ui.heading("bbs");
+            ui.label(&self.result_bbs);
         });
     }
 }
