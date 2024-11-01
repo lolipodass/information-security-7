@@ -1,4 +1,7 @@
 use num_bigint::BigInt;
+use num_bigint::BigUint;
+use num_bigint::ToBigUint;
+use num_prime::nt_funcs::factorize;
 use num_traits::One;
 use num_traits::Euclid;
 
@@ -92,6 +95,40 @@ pub fn gcd_bezout_big(a: BigInt, b: BigInt) -> (BigInt, BigInt, BigInt) {
     }
 
     (a.clone(), x.clone(), y.clone())
+}
+
+/// Finds the primitive root of a given number.
+///
+/// # Notes
+/// expect that n will be prime
+pub fn primitive_root(n: BigUint) -> Option<BigUint> {
+    let phi = n.clone() - BigUint::one();
+    let factors = factorize(phi.clone());
+    let fact = factors
+        .iter()
+        .map(|x| x.0)
+        .collect::<Vec<&BigUint>>();
+
+    for res in num_iter::range((2).to_biguint().unwrap(), n.clone()) {
+        let mut ok = true;
+        for i in &fact {
+            if ok && res.modpow(&(phi.clone() / *i), &n) == BigUint::one() {
+                ok = false;
+            }
+        }
+        if ok {
+            return Some(res);
+        }
+    }
+
+    None
+}
+
+#[test]
+fn test_primitive_root() {
+    assert_eq!(primitive_root((5).to_biguint().unwrap()), Some((2).to_biguint().unwrap()));
+    assert_eq!(primitive_root((7).to_biguint().unwrap()), Some((3).to_biguint().unwrap()));
+    assert_eq!(primitive_root((11).to_biguint().unwrap()), Some((2).to_biguint().unwrap()));
 }
 
 #[test]
