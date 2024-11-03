@@ -7,7 +7,7 @@ use super::number_utils::{ ceil_to_8, mod_inverse_big };
 
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(default)]
-struct RSA {
+pub struct RSA {
     p: BigUint,
     q: BigUint,
     n: BigUint,
