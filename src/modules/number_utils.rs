@@ -124,6 +124,19 @@ pub fn primitive_root(n: BigUint) -> Option<BigUint> {
     None
 }
 
+pub fn ceil_to_8(input: usize) -> usize {
+    ((input + 7) / 8) * 8
+}
+
+#[test]
+fn test_round_to_8() {
+    assert_eq!(ceil_to_8(8), 8);
+    assert_eq!(ceil_to_8(9), 16);
+    assert_eq!(ceil_to_8(10), 16);
+    assert_eq!(ceil_to_8(11), 16);
+    assert_eq!(ceil_to_8(12), 16);
+}
+
 #[test]
 fn test_primitive_root() {
     assert_eq!(primitive_root((5).to_biguint().unwrap()), Some((2).to_biguint().unwrap()));
