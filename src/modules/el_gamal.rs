@@ -10,7 +10,6 @@ use super::number_utils::primitive_root;
 pub struct ElGamal {
     p: BigUint,
     g: BigUint,
-    x: BigUint,
     y: BigUint,
     block_size: usize,
     exponent: BigUint,
@@ -41,17 +40,25 @@ impl ElGamal {
         Self {
             p: p.clone(),
             g,
-            x,
             y,
-            block_size: block_size / 8,
+            block_size: block_size / 8 + 1,
             exponent,
         }
     }
 
-    pub fn encrypt(&self, text: Vec<u8>) -> Vec<(BigUint, BigUint)> {
-        text.chunks(self.block_size)
+    pub fn encrypt(&self, text: &[u8]) -> Vec<u8> {
+        let encrypted_blocks: Vec<(BigUint, BigUint)> = text
+            .chunks(self.block_size - 1)
             .map(|block| self.encrypt_block(BigUint::from_bytes_be(block)))
-            .collect()
+            .collect();
+
+        let mut res = Vec::new();
+
+        for (a, b) in encrypted_blocks {
+            res.append(&mut Self::pad_bytes(&a.to_bytes_be(), self.block_size));
+            res.append(&mut Self::pad_bytes(&b.to_bytes_be(), self.block_size));
+        }
+        res
     }
 
     pub fn encrypt_block(&self, block: BigUint) -> (BigUint, BigUint) {
@@ -64,28 +71,41 @@ impl ElGamal {
         (a, b)
     }
 
-    pub fn decrypt(&self, text: Vec<(BigUint, BigUint)>) -> Vec<u8> {
-        text.into_iter()
-            .flat_map(|(a, b)| self.decrypt_block(a, b).to_bytes_be())
-            .collect()
+    pub fn decrypt(&self, text: &[u8]) -> Vec<u8> {
+        let mut res = Vec::new();
+        for block in text.chunks(self.block_size * 2) {
+            let (a_bytes, b_bytes) = block.split_at(self.block_size);
+            res.append(
+                &mut self
+                    .decrypt_block(BigUint::from_bytes_be(a_bytes), BigUint::from_bytes_be(b_bytes))
+                    .to_bytes_be()
+            );
+        }
+
+        res
     }
 
     pub fn decrypt_block(&self, a: BigUint, b: BigUint) -> BigUint {
         (b * a.modpow(&self.exponent, &self.p)) % &self.p
+    }
+
+    fn pad_bytes(bytes: &[u8], length: usize) -> Vec<u8> {
+        let mut padded = vec![0u8; length];
+        let offset = length - bytes.len();
+        padded[offset..].copy_from_slice(bytes);
+        padded
     }
 }
 
 #[test]
 fn test_elgamal() {
     let text =
-        "hi, this is really long text to encrypt; that contains more than one block, and have соме странге текст"
-            .as_bytes()
-            .to_vec();
+        "hi, this is really long text to encrypt; that contains more than one block, and have соме странге текст".as_bytes();
     println!("text {:?}", text);
     let el_gamal = ElGamal::new(100);
     let enc = el_gamal.encrypt(text.clone());
     println!("enc {:?}", enc);
-    let dec = el_gamal.decrypt(enc);
+    let dec = el_gamal.decrypt(&enc);
 
     assert_eq!(text, dec);
 }
