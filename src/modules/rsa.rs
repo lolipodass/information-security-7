@@ -3,7 +3,7 @@ use num_prime::RandPrime;
 use num_traits::One;
 use rand::{ thread_rng, Rng };
 
-use super::number_utils::mod_inverse_big;
+use super::number_utils::{ ceil_to_8, mod_inverse_big };
 
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(default)]
@@ -30,8 +30,7 @@ impl Default for RSA {
 }
 impl RSA {
     pub fn new(key_size: usize) -> Self {
-        // Round up to the nearest multiple of 8
-        let key_size = ((key_size + 7) / 8) * 8;
+        let key_size = ceil_to_8(key_size);
         let mut rand = thread_rng();
 
         // generate p and q until we find e and d that are not equal
