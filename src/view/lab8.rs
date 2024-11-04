@@ -1,7 +1,7 @@
 use std::{ collections::HashMap, hint::black_box, time::Instant };
 
 use egui_extras::Column;
-use egui_plot::{ Axis, AxisHints, Line, Plot, PlotPoints };
+use egui_plot::{ Line, Plot, PlotPoints };
 use num_bigint::{ BigUint, RandBigInt, ToBigUint };
 use num_prime::RandPrime;
 
@@ -17,6 +17,10 @@ pub struct AsymmetricCiphers {
     encrypted_elgamal: Vec<u8>,
     decrypted_elgamal: Vec<u8>,
     graph: Vec<(u32, u128)>,
+    rsa_encrypt_time: u128,
+    rsa_decrypt_time: u128,
+    elgamal_encrypt_time: u128,
+    elgamal_decrypt_time: u128,
 }
 
 impl Default for AsymmetricCiphers {
@@ -29,6 +33,10 @@ impl Default for AsymmetricCiphers {
             decrypted_rsa: Vec::new(),
             encrypted_elgamal: Vec::new(),
             decrypted_elgamal: Vec::new(),
+            rsa_encrypt_time: 0,
+            rsa_decrypt_time: 0,
+            elgamal_encrypt_time: 0,
+            elgamal_decrypt_time: 0,
         }
     }
 }
@@ -94,6 +102,8 @@ impl AsymmetricCiphers {
             ::new(ui)
             .column(Column::initial(80.0))
             .column(Column::initial(100.0).resizable(true))
+            .column(Column::initial(60.0))
+            .column(Column::initial(60.0))
             .column(Column::remainder())
             .header(20.0, |mut header| {
                 header.col(|ui| {
@@ -104,6 +114,12 @@ impl AsymmetricCiphers {
                 });
                 header.col(|ui| {
                     ui.heading("decrypted");
+                });
+                header.col(|ui| {
+                    ui.heading("encrypt time");
+                });
+                header.col(|ui| {
+                    ui.heading("decrypt time");
                 });
             })
             .body(|mut body| {
@@ -118,6 +134,13 @@ impl AsymmetricCiphers {
                     row.col(|ui| {
                         ui.label(String::from_utf8_lossy(&self.decrypted_rsa));
                     });
+
+                    row.col(|ui| {
+                        ui.label(&self.rsa_encrypt_time.to_string());
+                    });
+                    row.col(|ui| {
+                        ui.label(&self.rsa_decrypt_time.to_string());
+                    });
                 });
 
                 body.row(30.0, |mut row| {
@@ -130,17 +153,46 @@ impl AsymmetricCiphers {
                     row.col(|ui| {
                         ui.label(String::from_utf8_lossy(&self.decrypted_rsa));
                     });
+
+                    row.col(|ui| {
+                        ui.label(&self.elgamal_encrypt_time.to_string());
+                    });
+                    row.col(|ui| {
+                        ui.label(&self.elgamal_decrypt_time.to_string());
+                    });
                 });
             });
     }
 
     fn compute(&mut self) {
         let rsa = RSA::new(self.key_size);
-        self.encrypted_rsa = rsa.encrypt(self.input.as_bytes());
-        self.decrypted_rsa = rsa.decrypt(&self.encrypted_rsa);
+
+        let input = self.input.clone();
+        (self.rsa_encrypt_time, self.encrypted_rsa) = self.measure_time(|| {
+            rsa.encrypt(input.clone().as_bytes())
+        });
+
+        let encrypted_rsa = self.encrypted_rsa.clone();
+
+        (self.rsa_decrypt_time, self.decrypted_rsa) = self.measure_time(|| {
+            rsa.decrypt(&encrypted_rsa)
+        });
         let elgamal = ElGamal::new(self.key_size);
-        self.encrypted_elgamal = elgamal.encrypt(self.input.as_bytes());
-        self.decrypted_elgamal = elgamal.decrypt(&self.encrypted_elgamal);
+
+        (self.elgamal_encrypt_time, self.encrypted_elgamal) = self.measure_time(|| {
+            elgamal.encrypt(input.clone().as_bytes())
+        });
+
+        let encrypted_elgamal = self.encrypted_elgamal.clone();
+        (self.elgamal_decrypt_time, self.decrypted_elgamal) = self.measure_time(|| {
+            elgamal.decrypt(&encrypted_elgamal)
+        });
+    }
+
+    fn measure_time<F>(&mut self, f: F) -> (u128, Vec<u8>) where F: FnOnce() -> Vec<u8> {
+        let now = Instant::now();
+        let res = f();
+        (now.elapsed().as_nanos(), res)
     }
 
     fn time_graph(&mut self) -> HashMap<u32, u128> {
