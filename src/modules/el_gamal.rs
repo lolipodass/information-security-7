@@ -103,7 +103,7 @@ fn test_elgamal() {
         "hi, this is really long text to encrypt; that contains more than one block, and have соме странге текст".as_bytes();
     println!("text {:?}", text);
     let el_gamal = ElGamal::new(100);
-    let enc = el_gamal.encrypt(text.clone());
+    let enc = el_gamal.encrypt(text);
     println!("enc {:?}", enc);
     let dec = el_gamal.decrypt(&enc);
 
