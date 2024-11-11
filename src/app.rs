@@ -8,6 +8,7 @@ use primeculator::view::{
     lab6::PRSGenerators,
     lab7::KnapsackView,
     lab8::AsymmetricCiphers,
+    lab9::HashMD5,
 };
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -21,6 +22,7 @@ pub struct PrimeCulatorBase {
     lab6: PRSGenerators,
     lab7: KnapsackView,
     lab8: AsymmetricCiphers,
+    lab9: HashMD5,
 }
 
 impl Default for PrimeCulatorBase {
@@ -34,6 +36,7 @@ impl Default for PrimeCulatorBase {
             lab6: PRSGenerators::default(),
             lab7: KnapsackView::default(),
             lab8: AsymmetricCiphers::default(),
+            lab9: HashMD5::default(),
         }
     }
 }
@@ -77,6 +80,7 @@ impl eframe::App for PrimeCulatorBase {
                 ui.collapsing("lab 6", |ui| { self.lab6.update(ui) });
                 ui.collapsing("lab 7", |ui| { self.lab7.update(ui) });
                 ui.collapsing("lab 8", |ui| { self.lab8.update(ui) });
+                ui.collapsing("lab 9", |ui| { self.lab9.update(ui) });
             });
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 egui::warn_if_debug_build(ui);
