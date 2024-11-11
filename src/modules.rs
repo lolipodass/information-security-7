@@ -7,3 +7,4 @@ pub mod generators;
 pub mod knapsack_cipher;
 pub mod rsa;
 pub mod el_gamal;
+pub mod md5;
