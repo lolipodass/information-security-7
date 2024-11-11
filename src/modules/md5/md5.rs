@@ -35,8 +35,6 @@ pub fn md5(data: &[u8]) -> [u8; 16] {
         }
     }
 
-    println!("A {:0x} B {:0x} C {:0x} D {:0x}", a, b, c, d);
-    println!("result: {:?}", a.to_le_bytes());
     let mut result = [0u8; 16];
     result[0..4].copy_from_slice(&a.to_le_bytes());
     result[4..8].copy_from_slice(&b.to_le_bytes());
@@ -85,6 +83,5 @@ fn test_md5() {
 
     let expected = "23db6982caef9e9152f1a5b2589e6ca3";
     let result = hex::encode(md5(input.as_bytes()));
-    println!("result: {:x?}", result);
     assert_eq!(result, expected);
 }
