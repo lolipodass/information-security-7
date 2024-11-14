@@ -1,5 +1,6 @@
 use std::{ collections::HashMap, hint::black_box, time::Instant };
 
+use base64::{ prelude::BASE64_STANDARD, Engine };
 use egui_extras::Column;
 use egui_plot::{ Line, Plot, PlotPoints };
 use num_bigint::{ BigUint, RandBigInt, ToBigUint };
@@ -11,6 +12,7 @@ use crate::modules::{ el_gamal::ElGamal, rsa::RSA };
 #[serde(default)]
 pub struct AsymmetricCiphers {
     input: String,
+    mode: String,
     key_size: usize,
     encrypted_rsa: Vec<u8>,
     decrypted_rsa: Vec<u8>,
@@ -27,6 +29,7 @@ impl Default for AsymmetricCiphers {
     fn default() -> Self {
         Self {
             input: String::new(),
+            mode: "plain".to_string(),
             key_size: 128,
             graph: Vec::new(),
             encrypted_rsa: Vec::new(),
@@ -77,11 +80,20 @@ impl AsymmetricCiphers {
                 .show(ui, |plot_ui| plot_ui.line(line));
         });
 
+        egui::ComboBox
+            ::from_id_salt("select")
+            .selected_text(&self.mode)
+            .show_ui(ui, |ui| {
+                ui.selectable_value(&mut self.mode, "plain".to_string(), "Plain text");
+                ui.selectable_value(&mut self.mode, "Base64".to_string(), "Base64");
+            });
+        ui.add_space(10.0);
+
         ui.label("Input");
         ui.text_edit_singleline(&mut self.input);
 
         ui.label("Key");
-        ui.add(egui::DragValue::new(&mut self.key_size).range(8..=300));
+        ui.add(egui::DragValue::new(&mut self.key_size).range(8..=400));
 
         ui.add_space(10.0);
         if ui.button("clear").clicked() {
@@ -162,9 +174,21 @@ impl AsymmetricCiphers {
                     });
                 });
             });
+        ui.label(
+            format!(
+                "size in: {}, rsa: {}, elgamal: {}",
+                self.input.len(),
+                self.encrypted_rsa.len(),
+                self.encrypted_elgamal.len()
+            )
+        );
     }
 
     fn compute(&mut self) {
+        if self.mode == "Base64" {
+            self.input = BASE64_STANDARD.encode(self.input.clone().as_bytes());
+        }
+
         let rsa = RSA::new(self.key_size);
 
         let input = self.input.clone();
@@ -177,7 +201,11 @@ impl AsymmetricCiphers {
         (self.rsa_decrypt_time, self.decrypted_rsa) = self.measure_time(|| {
             rsa.decrypt(&encrypted_rsa)
         });
-        let elgamal = ElGamal::new(self.key_size);
+        let mut key_size = self.key_size;
+        if self.key_size > 100 {
+            key_size /= 2;
+        }
+        let elgamal = ElGamal::new(key_size);
 
         (self.elgamal_encrypt_time, self.encrypted_elgamal) = self.measure_time(|| {
             elgamal.encrypt(input.clone().as_bytes())
@@ -203,15 +231,15 @@ impl AsymmetricCiphers {
         let n: BigUint = rand.gen_prime(2048, None);
 
         let mut x_values = Vec::new();
-        for _ in 0..10 {
-            let x: BigUint = rand.gen_prime(100, None);
+        for i in 0..10 {
+            let x: BigUint = rand.gen_prime(100 * i, None);
             x_values.push(x);
         }
 
         for (i, x) in x_values.iter().enumerate() {
             let now = Instant::now();
 
-            let y = black_box(black_box(&a) * black_box(x)) % black_box(&n);
+            let y = black_box(black_box(&a).modpow(black_box(x), black_box(&n)));
             black_box(y);
             res.insert(i as u32, now.elapsed().as_nanos());
         }
