@@ -52,6 +52,22 @@ impl RSA {
         }
     }
 
+    pub fn from_keys(e: BigUint, n: BigUint) -> Self {
+        let block_size = n.to_bytes_le().len() - 1;
+        RSA {
+            p: BigUint::ZERO,
+            q: BigUint::ZERO,
+            n,
+            e,
+            d: BigUint::ZERO,
+            block_size,
+        }
+    }
+
+    pub fn get_keys(&self) -> (BigUint, BigUint) {
+        (self.e.clone(), self.n.clone())
+    }
+
     pub fn encrypt(&self, text: &[u8]) -> Vec<u8> {
         let mut res = Vec::with_capacity(text.len());
 
@@ -68,6 +84,9 @@ impl RSA {
     }
 
     pub fn decrypt(&self, encrypted: &[u8]) -> Vec<u8> {
+        if self.d == BigUint::ZERO {
+            return Vec::new();
+        }
         encrypted
             .chunks(self.block_size + 1)
             .flat_map(|block| {
@@ -76,6 +95,18 @@ impl RSA {
             })
             .collect()
     }
+
+    pub fn sign(&self, text: &[u8]) -> Vec<u8> {
+        BigUint::from_bytes_be(blake3::hash(text).as_bytes()).modpow(&self.d, &self.n).to_bytes_be()
+    }
+
+    pub fn verify(&self, text: &[u8], signature: &[u8]) -> bool {
+        let hash = BigUint::from_bytes_be(blake3::hash(text).as_bytes());
+
+        let decrypted_hash = BigUint::from_bytes_be(signature).modpow(&self.e, &self.n);
+        decrypted_hash == hash
+    }
+
     fn generate_primes<R: Rng>(rand: &mut R, key_size: usize) -> (BigUint, BigUint) {
         let p = rand.gen_prime_exact(key_size / 2, None);
         // Generate q slightly larger to ensure n is adequately sized
@@ -116,4 +147,12 @@ fn test_rsa() {
 
         assert_eq!(text, dec);
     }
+}
+
+#[test]
+fn test_rsa_sign() {
+    let rsa = RSA::new(1024);
+    let message = "hello".as_bytes();
+    let signature = rsa.sign(&message);
+    assert!(rsa.verify(&message, &signature));
 }
