@@ -1,16 +1,17 @@
-use num_bigint::{ BigUint, RandBigInt };
+use num_bigint::{ BigInt, BigUint, RandBigInt, ToBigInt };
 use num_prime::RandPrime;
 use num_traits::One;
 use rand::thread_rng;
 
 use crate::modules::number_utils::ceil_to_8;
 
-use super::number_utils::primitive_root;
+use super::number_utils::{ mod_inverse_big, primitive_root };
 
 pub struct ElGamal {
     p: BigUint,
     g: BigUint,
     y: BigUint,
+    x: BigUint,
     block_size: usize,
     exponent: BigUint,
 }
@@ -41,6 +42,7 @@ impl ElGamal {
             p: p.clone(),
             g,
             y,
+            x,
             block_size: block_size / 8 + 1,
             exponent,
         }
@@ -89,6 +91,38 @@ impl ElGamal {
         (b * a.modpow(&self.exponent, &self.p)) % &self.p
     }
 
+    pub fn sign(&self, text: &[u8]) -> (BigUint, BigUint) {
+        let hash = BigInt::from_bytes_be(num_bigint::Sign::Plus, blake3::hash(text).as_bytes());
+
+        let (k, k_1) = loop {
+            let k = rand::thread_rng().gen_biguint_below(&self.p);
+
+            let k_1 = mod_inverse_big(k.clone().into(), (&self.p - BigUint::one()).into());
+            if k_1.is_some() {
+                break (k, k_1.unwrap().to_biguint().unwrap());
+            }
+        };
+
+        let r = self.g.modpow(&k, &self.p);
+
+        let val = &hash - BigInt::from_biguint(num_bigint::Sign::Plus, &self.x * &r);
+        let s = (val * k_1.to_bigint().unwrap()) % (&self.p.to_bigint().unwrap() - BigInt::one());
+
+        (r, s.to_biguint().unwrap())
+    }
+
+    pub fn verify(&self, text: &[u8], signature: (BigUint, BigUint)) -> bool {
+        let (r, s) = signature;
+
+        let hash = BigUint::from_bytes_be(blake3::hash(text).as_bytes());
+        let g_pow = self.g.modpow(&hash, &self.p);
+
+        let y_pow = self.y.modpow(&r, &self.p);
+        let r_pow = r.modpow(&s, &self.p);
+
+        g_pow == (y_pow * r_pow) % &self.p
+    }
+
     fn pad_bytes(bytes: &[u8], length: usize) -> Vec<u8> {
         let mut padded = vec![0u8; length];
         let offset = length - bytes.len();
@@ -108,4 +142,13 @@ fn test_elgamal() {
     let dec = el_gamal.decrypt(&enc);
 
     assert_eq!(text, dec);
+}
+
+#[test]
+fn test_elgamal_sign() {
+    let text =
+        "hi, this is really long text to encrypt; that contains more than one block, and have соме странге текст".as_bytes();
+    let el_gamal = ElGamal::new(100);
+    let signature = el_gamal.sign(text);
+    assert!(el_gamal.verify(text, signature));
 }
