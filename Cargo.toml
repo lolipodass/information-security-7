@@ -31,6 +31,7 @@ num-prime = "0.4.4"
 num-traits = "0.2.19"
 num-iter = "0.1.45"
 hex = "0.4.3"
+blake3 = "1.5.4"
 [dev-dependencies]
 criterion = "0.5.1"
 
