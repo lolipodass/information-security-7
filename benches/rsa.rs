@@ -20,6 +20,19 @@ pub fn rsa_benchmark(c: &mut Criterion) {
                 black_box(decrypt);
             })
         });
+        group.bench_function(format!("rsa_sign_{}", size), |b| {
+            b.iter(|| {
+                let sign = rsa.sign(black_box(&text.clone()));
+                black_box(sign);
+            })
+        });
+        group.bench_function(format!("rsa_verify_{}", size), |b| {
+            let sign = rsa.sign(&text.clone());
+            b.iter(|| {
+                let verify = rsa.verify(black_box(&text.clone()), black_box(&sign));
+                black_box(verify);
+            })
+        });
     }
     group.finish();
 }

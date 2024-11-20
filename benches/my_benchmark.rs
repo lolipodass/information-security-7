@@ -11,6 +11,7 @@ use md5::md5_benchmark;
 use rc4::rc4_benchmark;
 use route::benchmark_route_permutation;
 use rsa::rsa_benchmark;
+use schnorr::schnorr_benchmark;
 use trisemus::benchmark_trisemus;
 
 mod caesars;
@@ -24,6 +25,7 @@ mod knapsack;
 mod rsa;
 mod el_gamal;
 mod md5;
+mod schnorr;
 
 criterion_group!(
     benches,
@@ -38,6 +40,7 @@ criterion_group!(
     knapsack_benchmark,
     rsa_benchmark,
     el_gamal_benchmark,
-    md5_benchmark
+    md5_benchmark,
+    schnorr_benchmark
 );
 criterion_main!(benches);
