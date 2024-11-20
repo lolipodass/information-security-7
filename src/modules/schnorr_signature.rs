@@ -37,7 +37,7 @@ impl SchnorrSignature {
         SchnorrSignature { p, q, g, w, y }
     }
 
-    pub fn schnorr_sign(&self, text: &[u8]) -> (BigUint, BigUint) {
+    pub fn sign(&self, text: &[u8]) -> (BigUint, BigUint) {
         let mut rng = rand::thread_rng();
         let r = rng.gen_biguint_below(&self.q);
 
@@ -51,7 +51,7 @@ impl SchnorrSignature {
         (s1, s2)
     }
 
-    pub fn schnorr_verify(&self, text: &[u8], signature: (BigUint, BigUint)) -> bool {
+    pub fn verify(&self, text: &[u8], signature: (BigUint, BigUint)) -> bool {
         let (s1, s2) = signature;
         let g_pow = self.g.modpow(&s2, &self.p);
         let y_pow = self.y.modpow(&s1, &self.p);
@@ -72,6 +72,6 @@ impl SchnorrSignature {
 fn test_schnorr_signature() {
     let text = "hello".as_bytes();
     let schnorr_signature = SchnorrSignature::new(20);
-    let signature = schnorr_signature.schnorr_sign(text);
-    assert!(schnorr_signature.schnorr_verify(text, signature));
+    let signature = schnorr_signature.sign(text);
+    assert!(schnorr_signature.verify(text, signature));
 }

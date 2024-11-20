@@ -117,7 +117,7 @@ impl Signing {
         self.el_gamal_res = el_gamal.verify(&self.input.as_bytes(), self.el_gamal_key.clone());
 
         let schnorr = SchnorrSignature::new(20);
-        self.schnorr_key = schnorr.schnorr_sign(self.input.as_bytes());
-        self.schnorr_res = schnorr.schnorr_verify(self.input.as_bytes(), self.schnorr_key.clone());
+        self.schnorr_key = schnorr.sign(self.input.as_bytes());
+        self.schnorr_res = schnorr.verify(self.input.as_bytes(), self.schnorr_key.clone());
     }
 }
