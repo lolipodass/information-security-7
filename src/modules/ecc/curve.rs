@@ -3,24 +3,24 @@ use crate::modules::number_utils::mod_inverse;
 use super::point::Point;
 
 pub struct EpilepticCurve {
-    p: u64,
+    n: i64,
     a: i64,
     b: i64,
     sqrts: Vec<u64>,
 }
 
 impl EpilepticCurve {
-    pub fn new(p: u64, a: i64, b: i64) -> Self {
-        if (4 * a.pow(3) + 27 * b * b) % (p as i64) == 0 {
+    pub fn new(n: u64, a: i64, b: i64) -> Self {
+        if (4 * a.pow(3) + 27 * b * b) % (n as i64) == 0 {
             panic!("Invalid curve");
         }
 
         let mut sqrts = Vec::new();
-        for y in 0..p {
-            sqrts.push(y.pow(2) % p);
+        for y in 0..n {
+            sqrts.push(y.pow(2) % n);
         }
 
-        Self { p, a, b, sqrts }
+        Self { n: n as i64, a, b, sqrts }
     }
 
     pub fn sum_points(&self, a: Point, b: Point) -> Point {
@@ -28,20 +28,28 @@ impl EpilepticCurve {
             (Point::Infinite, _) => b,
             (_, Point::Infinite) => a,
             (Point::Finite { x: a_x, y: a_y }, Point::Finite { x: b_x, y: b_y }) => {
-                let lambda = (
-                    if a_x != b_x {
-                        (b_y - a_y) * (mod_inverse(b_x - a_x, self.p as i64).unwrap() as i64)
-                    } else {
-                        (3 * a_x.pow(2) + self.a) *
-                            (mod_inverse(2 * a_y, self.p as i64).unwrap() as i64)
+                let lambda = match self.calculate_lambda(a_x, a_y, b_x, b_y) {
+                    Some(x) => x.rem_euclid(self.n as i64),
+                    None => {
+                        return Point::Infinite;
                     }
-                ).rem_euclid(self.p as i64);
+                };
 
                 let x = lambda.pow(2) - a_x - b_x;
                 let y = lambda * (a_x - x) - a_y;
 
-                Point::new(x.rem_euclid(self.p as i64), y.rem_euclid(self.p as i64))
+                Point::new(x.rem_euclid(self.n as i64), y.rem_euclid(self.n as i64))
             }
+        }
+    }
+
+    fn calculate_lambda(&self, a_x: i64, a_y: i64, b_x: i64, b_y: i64) -> Option<i64> {
+        if a_x != b_x {
+            let inv = mod_inverse((b_x - a_x).rem_euclid(self.n), self.n)?;
+            Some((b_y - a_y) * (inv as i64))
+        } else {
+            let inv = mod_inverse((2 * a_y).rem_euclid(self.n), self.n)?;
+            Some((3 * a_x.pow(2) + self.a) * (inv as i64))
         }
     }
 
@@ -63,7 +71,7 @@ impl EpilepticCurve {
     pub fn find_point_in_range(&self, x_min: i64, x_max: i64) -> Vec<Point> {
         let mut points = Vec::new();
         for x in x_min..x_max {
-            let x_pow = (x.pow(3) + self.a * x + self.b) % (self.p as i64);
+            let x_pow = (x.pow(3) + self.a * x + self.b) % self.n;
             let sqrts = self.sqrt(x_pow as u64);
             for y in &sqrts {
                 points.push(Point::new(x, *y as i64));
