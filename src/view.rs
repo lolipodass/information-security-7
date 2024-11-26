@@ -8,3 +8,4 @@ pub mod lab7;
 pub mod lab8;
 pub mod lab9;
 pub mod lab10;
+pub mod lab11;

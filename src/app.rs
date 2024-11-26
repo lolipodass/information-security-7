@@ -10,6 +10,7 @@ use primeculator::view::{
     lab8::AsymmetricCiphers,
     lab9::HashMD5,
     lab10::Signing,
+    lab11::EEC,
 };
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -25,6 +26,7 @@ pub struct PrimeCulatorBase {
     lab8: AsymmetricCiphers,
     lab9: HashMD5,
     lab10: Signing,
+    lab11: EEC,
 }
 
 impl Default for PrimeCulatorBase {
@@ -40,6 +42,7 @@ impl Default for PrimeCulatorBase {
             lab8: AsymmetricCiphers::default(),
             lab9: HashMD5::default(),
             lab10: Signing::default(),
+            lab11: EEC::default(),
         }
     }
 }
@@ -85,6 +88,7 @@ impl eframe::App for PrimeCulatorBase {
                 ui.collapsing("lab 8", |ui| { self.lab8.update(ui) });
                 ui.collapsing("lab 9", |ui| { self.lab9.update(ui) });
                 ui.collapsing("lab 10", |ui| { self.lab10.update(ui) });
+                ui.collapsing("lab 11", |ui| { self.lab11.update(ui) });
             });
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 egui::warn_if_debug_build(ui);
