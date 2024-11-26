@@ -1,4 +1,8 @@
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+use std::fmt;
+
+use serde::{ Deserialize, Serialize };
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum Point {
     Finite {
         x: i64,
@@ -14,5 +18,20 @@ impl Point {
 
     pub fn infinite() -> Self {
         Point::Infinite
+    }
+    pub fn negative(&self) -> Self {
+        match self {
+            Point::Finite { x, y } => Point::Finite { x: *x, y: -y },
+            Point::Infinite => Point::Infinite,
+        }
+    }
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Infinite => { write!(f, "Infinite") }
+            Self::Finite { x, y } => { write!(f, "({}, {})", x, y) }
+        }
     }
 }
