@@ -1,3 +1,5 @@
+use std::i128;
+
 use num_bigint::BigUint;
 use rand::{ thread_rng, Rng };
 
@@ -29,7 +31,7 @@ impl KnapsackCipher {
 
         let (a, a_inv) = loop {
             let a = rand.gen_range(1..n);
-            let a_inv = mod_inverse(a, n);
+            let a_inv = mod_inverse(a as i128, n as i128);
             if a_inv.is_some() {
                 break (a, a_inv.unwrap());
             }
