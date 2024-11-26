@@ -11,13 +11,13 @@ pub struct EpilepticCurve {
 
 impl EpilepticCurve {
     pub fn new(n: u64, a: i64, b: i64) -> Self {
-        if (4 * a.pow(3) + 27 * b * b) % (n as i64) == 0 {
+        if (4 * a * a * a + 27 * b * b) % (n as i64) == 0 {
             panic!("Invalid curve");
         }
 
         let mut sqrts = Vec::new();
         for y in 0..n {
-            sqrts.push(y.pow(2) % n);
+            sqrts.push((y * y) % n);
         }
 
         Self { n: n as i64, a, b, sqrts }
@@ -35,7 +35,7 @@ impl EpilepticCurve {
                     }
                 };
 
-                let x = lambda.pow(2) - a_x - b_x;
+                let x = lambda * lambda - a_x - b_x;
                 let y = lambda * (a_x - x) - a_y;
 
                 Point::new(x.rem_euclid(self.n as i64), y.rem_euclid(self.n as i64))
@@ -49,7 +49,7 @@ impl EpilepticCurve {
             Some((b_y - a_y) * (inv as i64))
         } else {
             let inv = mod_inverse((2 * a_y).rem_euclid(self.n), self.n)?;
-            Some((3 * a_x.pow(2) + self.a) * (inv as i64))
+            Some((3 * a_x * a_x + self.a) * (inv as i64))
         }
     }
 
@@ -71,7 +71,7 @@ impl EpilepticCurve {
     pub fn find_point_in_range(&self, x_min: i64, x_max: i64) -> Vec<Point> {
         let mut points = Vec::new();
         for x in x_min..x_max {
-            let x_pow = (x.pow(3) + self.a * x + self.b) % self.n;
+            let x_pow = (x * x * x + self.a * x + self.b) % self.n;
             let sqrts = self.sqrt(x_pow as u64);
             for y in &sqrts {
                 points.push(Point::new(x, *y as i64));
