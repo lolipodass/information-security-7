@@ -1,6 +1,3 @@
-use std::ops::Rem;
-use std::ops::Sub;
-
 use num_bigint::BigInt;
 use num_bigint::BigUint;
 use num_bigint::ToBigUint;
@@ -37,9 +34,7 @@ pub fn find_prime_numbers(a: i32, b: i32) -> Vec<i32> {
     res
 }
 
-pub fn mod_inverse<T>(a: T, n: T) -> Option<u128>
-    where T: Copy + Into<i128> + Rem<Output = T> + Sub<Output = T> + PartialEq
-{
+pub fn mod_inverse<T>(a: T, n: T) -> Option<u128> where T: Copy + Into<i128> + PartialEq {
     let (gcd, x, _) = gcd_bezout(a.into(), n.into());
     if gcd == 1 {
         Some(x.rem_euclid(n.into()) as u128)
