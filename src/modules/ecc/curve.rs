@@ -23,7 +23,7 @@ impl EpilepticCurve {
         Self { n: n as i64, a, b, sqrts }
     }
 
-    pub fn sum_points(&self, a: Point, b: Point) -> Point {
+    pub fn add(&self, a: Point, b: Point) -> Point {
         match (a, b) {
             (Point::Infinite, _) => b,
             (_, Point::Infinite) => a,
@@ -48,21 +48,24 @@ impl EpilepticCurve {
             let inv = mod_inverse((b_x - a_x).rem_euclid(self.n), self.n)?;
             Some((b_y - a_y) * (inv as i64))
         } else {
+            if (a_y + b_y).rem_euclid(self.n) == 0 {
+                return None;
+            }
             let inv = mod_inverse((2 * a_y).rem_euclid(self.n), self.n)?;
             Some((3 * a_x * a_x + self.a) * (inv as i64))
         }
     }
 
-    pub fn multiply_point(&self, point: Point, scalar: u64) -> Point {
+    pub fn scalar(&self, point: Point, scalar: u64) -> Point {
         let mut scalar = scalar;
         let mut res = Point::Infinite;
         let mut buf = point;
         while scalar > 0 {
             if (scalar & 1) == 1 {
-                res = self.sum_points(res, buf);
+                res = self.add(res, buf);
             }
             scalar >>= 1;
-            buf = self.sum_points(buf, buf);
+            buf = self.add(buf, buf);
         }
 
         res
@@ -70,6 +73,8 @@ impl EpilepticCurve {
 
     pub fn find_point_in_range(&self, x_min: i64, x_max: i64) -> Vec<Point> {
         let mut points = Vec::new();
+        let x_min = x_min.max(0);
+        let x_max = x_max.min(self.n);
         for x in x_min..x_max {
             let x_pow = (x * x * x + self.a * x + self.b) % self.n;
             let sqrts = self.sqrt(x_pow as u64);
@@ -90,6 +95,17 @@ impl EpilepticCurve {
             })
             .collect()
     }
+
+    pub fn order(&self, point: Point) -> u64 {
+        let mut order = 0;
+        let mut res = point;
+        while res != Point::Infinite {
+            res = self.add(res, point);
+            order += 1;
+        }
+        //+1 because last point is infinite
+        order + 1
+    }
 }
 
 #[test]
@@ -100,9 +116,9 @@ fn test_sum_points() {
     let point3 = Point::new(45, 31);
     let point4 = Point::new(43, 527);
 
-    assert_eq!(curve.sum_points(point1, point2), Point::new(0, 750));
-    assert_eq!(curve.sum_points(point1, point3), Point::new(316, 228));
-    assert_eq!(curve.sum_points(point1, point4), Point::new(433, 704));
+    assert_eq!(curve.add(point1, point2), Point::new(0, 750));
+    assert_eq!(curve.add(point1, point3), Point::new(316, 228));
+    assert_eq!(curve.add(point1, point4), Point::new(433, 704));
 }
 
 #[test]
@@ -110,8 +126,26 @@ fn test_multiply_point() {
     let curve = EpilepticCurve::new(751, -1, 1);
     let point = Point::new(1, 1);
 
-    assert_eq!(curve.multiply_point(point, 2), Point::new(750, 1));
-    assert_eq!(curve.multiply_point(point, 3), Point::new(0, 750));
-    assert_eq!(curve.multiply_point(point, 4), Point::new(3, 746));
-    assert_eq!(curve.multiply_point(point, 5), Point::new(5, 11));
+    assert_eq!(curve.scalar(point, 2), Point::new(750, 1));
+    assert_eq!(curve.scalar(point, 3), Point::new(0, 750));
+    assert_eq!(curve.scalar(point, 4), Point::new(3, 746));
+    assert_eq!(curve.scalar(point, 5), Point::new(5, 11));
+}
+
+#[test]
+fn test_find_point_in_range() {
+    let curve = EpilepticCurve::new(751, -1, 1);
+    let points = curve.find_point_in_range(0, 751);
+    // println!("points {:?}", points);
+
+    let mut max_order = 0;
+    for point in points.clone() {
+        let order = curve.order(point);
+        println!("point {} order {}", point, order);
+        if order > max_order {
+            max_order = order;
+        }
+    }
+    println!("max_order {}", max_order);
+    assert_eq!(points.len(), 727);
 }
