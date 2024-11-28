@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{ fmt, ops };
 
 use serde::{ Deserialize, Serialize };
 
@@ -19,9 +19,13 @@ impl Point {
     pub fn infinite() -> Self {
         Point::Infinite
     }
-    pub fn negative(&self) -> Self {
+}
+
+impl ops::Neg for Point {
+    type Output = Self;
+    fn neg(self) -> Self {
         match self {
-            Point::Finite { x, y } => Point::Finite { x: *x, y: -y },
+            Point::Finite { x, y } => Point::Finite { x, y: -y },
             Point::Infinite => Point::Infinite,
         }
     }

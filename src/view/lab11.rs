@@ -112,18 +112,15 @@ impl EEC {
             });
     }
     pub fn compute(&mut self) {
-        let curve = curve::EpilepticCurve::new(self.n, self.a, self.b);
-        self.points = curve.find_point_in_range(0, self.n as i64);
+        let eec = curve::EpilepticCurve::new(self.n, self.a, self.b);
+        self.points = eec.find_point_in_range(0, self.n as i64);
 
         let mut points_computed = Vec::new();
         for p in &self.points {
-            let q = curve.multiply_point(*p, self.k);
-            let r = curve.sum_points(*p, q);
-            let s = curve.sum_points(
-                curve.sum_points(q, curve.multiply_point(q, self.l)),
-                r.negative()
-            );
-            let g = curve.sum_points(curve.sum_points(*p, q.negative()), r);
+            let q = eec.scalar(*p, self.k);
+            let r = eec.add(*p, q);
+            let s = eec.add(eec.add(q, eec.scalar(q, self.l)), -r);
+            let g = eec.add(eec.add(*p, -q), r);
 
             points_computed.push((*p, q, r, s, g));
         }
