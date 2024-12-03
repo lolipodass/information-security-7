@@ -44,7 +44,6 @@ impl EEC {
 
         ui.text_edit_singleline(&mut self.input);
 
-        //inpu
         ui.horizontal(|ui| {
             ui.label("a: ");
             ui.add(egui::DragValue::new(&mut self.a));
