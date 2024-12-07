@@ -11,3 +11,4 @@ pub mod md5;
 pub mod schnorr_signature;
 pub mod ecc;
 pub mod lsb;
+pub mod ai;
