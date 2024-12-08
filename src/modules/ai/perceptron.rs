@@ -42,26 +42,27 @@ impl Perceptron {
             match rule {
                 LearningRule::Hebbian => {
                     *weight =
-                        *weight +
-                        x_i * tau_a * Self::theta(pred * tau_b) * Self::theta(tau_a * tau_b);
+                        *weight + pred * x_i * Self::theta(pred, tau_a) * Self::theta(tau_a, tau_b);
                 }
                 LearningRule::AntiHebbian => {
                     *weight =
-                        *weight -
-                        x_i * tau_a * Self::theta(pred * tau_b) * Self::theta(tau_a * tau_b);
+                        *weight - pred * x_i * Self::theta(pred, tau_a) * Self::theta(tau_a, tau_b);
                 }
                 LearningRule::RandomWalk => {
-                    *weight = *weight + x_i * Self::theta(pred * tau_b);
+                    *weight = *weight + x_i * Self::theta(pred, tau_a) * Self::theta(tau_a, tau_b);
                 }
             }
             if *weight > (self.l as i32) {
                 *weight = (self.l as i32) * Self::sgn(*weight);
             }
+            if *weight < -(self.l as i32) {
+                *weight = -(self.l as i32) * Self::sgn(*weight);
+            }
         }
     }
 
-    fn theta(a: i32) -> i32 {
-        if a > 0 { 1 } else { 0 }
+    fn theta(a: i32, b: i32) -> i32 {
+        (a == b) as i32
     }
     fn sgn(a: i32) -> i32 {
         if a > 0 { 1 } else { -1 }
