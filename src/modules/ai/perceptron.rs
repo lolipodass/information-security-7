@@ -17,8 +17,13 @@ pub enum LearningRule {
 }
 
 impl Perceptron {
-    pub fn new(l: u32, n: u8) -> Self {
-        Perceptron { weights: vec![0;n.into()], l, n }
+    pub fn new(weight_range: u32, inputs_amount: u8) -> Self {
+        let mut rand = rand::thread_rng();
+
+        let weights = (0..inputs_amount)
+            .map(|_| rand.gen_range(-(weight_range as i32)..=weight_range as i32))
+            .collect();
+        Perceptron { weights: weights, l: weight_range, n: inputs_amount }
     }
 
     pub fn predict(&self, x: &[i32]) -> i32 {
