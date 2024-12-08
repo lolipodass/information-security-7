@@ -1,9 +1,15 @@
+use std::fmt::Display;
+
+use rand::Rng;
+
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Perceptron {
     pub weights: Vec<i32>,
     pub l: u32,
     pub n: u8,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum LearningRule {
     Hebbian,
     AntiHebbian,
@@ -56,3 +62,10 @@ impl Perceptron {
         if a > 0 { 1 } else { -1 }
     }
 }
+
+impl Display for Perceptron {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, " Weights: {:2?}", self.weights)
+    }
+}
+
