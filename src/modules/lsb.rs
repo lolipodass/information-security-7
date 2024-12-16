@@ -1,4 +1,4 @@
-use image::{ DynamicImage, GenericImageView, ImageBuffer, ImageReader, Pixel, Rgba };
+use image::{ DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgba };
 
 pub fn hide(
     container: DynamicImage,
@@ -10,16 +10,16 @@ pub fn hide(
     let mut res = ImageBuffer::new(w, h);
 
     let bits = split_into_bits(message, bits_per_channel);
-    let mut iter = bits.iter();
+    let mut iter = bits.iter().peekable();
 
     for (x, y, mut pixel) in container.pixels() {
         let channels = pixel.channels_mut();
 
-        //optimize
-        for channel in &mut channels[..3] {
-            if let Some(bits) = iter.next() {
-                print!("{:02b} ", bits);
-                *channel = write_bits(*channel, *bits, bits_per_channel);
+        if iter.peek().is_some() && bit {
+            for channel in &mut channels[..3] {
+                if let Some(bits) = iter.next() {
+                    *channel = write_bits(*channel, *bits, bits_per_channel);
+                }
             }
         }
 
@@ -148,6 +148,7 @@ fn combine_bits(bytes: &[u8], bits_per_chunk: u8) -> Vec<u8> {
 #[test]
 fn test_lsb() {
     let image = ImageReader::open("image2.jpg").unwrap().decode().unwrap();
+    use image::ImageReader;
 
     // let image = ImageReader::open("image3.png").unwrap().decode().unwrap();
 
@@ -158,7 +159,7 @@ fn test_lsb() {
         print!("{:08b} ", char);
     }
 
-    let bits_per_channel = 2;
+    let bits_per_channel = 1;
     let hidden = hide(image, message, bits_per_channel);
     hidden.save("hide.png").unwrap();
 
