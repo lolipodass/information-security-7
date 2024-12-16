@@ -34,24 +34,19 @@ impl Perceptron {
         Self::sgn(sum)
     }
 
-    pub fn train(&mut self, x: &[i32], tau_a: i32, tau_b: i32, rule: LearningRule) {
+    pub fn train(&mut self, x: &[i32], tau: i32, rule: LearningRule) {
         let pred = self.predict(x);
+        if pred != tau {
+            return;
+        }
         for i in 0..self.n {
             let weight = &mut self.weights[i as usize];
             let x_i = x[i as usize];
-            match rule {
-                LearningRule::Hebbian => {
-                    *weight =
-                        *weight + pred * x_i * Self::theta(pred, tau_a) * Self::theta(tau_a, tau_b);
-                }
-                LearningRule::AntiHebbian => {
-                    *weight =
-                        *weight - pred * x_i * Self::theta(pred, tau_a) * Self::theta(tau_a, tau_b);
-                }
-                LearningRule::RandomWalk => {
-                    *weight = *weight + x_i * Self::theta(pred, tau_a) * Self::theta(tau_a, tau_b);
-                }
-            }
+            *weight = match rule {
+                LearningRule::Hebbian => x_i * pred,
+                LearningRule::AntiHebbian => -x_i * pred,
+                LearningRule::RandomWalk => x_i,
+            };
             if *weight > (self.l as i32) {
                 *weight = (self.l as i32) * Self::sgn(*weight);
             }
@@ -59,10 +54,6 @@ impl Perceptron {
                 *weight = -(self.l as i32) * Self::sgn(*weight);
             }
         }
-    }
-
-    fn theta(a: i32, b: i32) -> i32 {
-        (a == b) as i32
     }
     fn sgn(a: i32) -> i32 {
         if a > 0 { 1 } else { -1 }
@@ -75,3 +66,9 @@ impl Display for Perceptron {
     }
 }
 
+#[test]
+fn test_perceptron() {
+    let perceptron = Perceptron::new(1, 2);
+    println!("perceptron: {:#?}", perceptron);
+    println!("perceptron: {}", perceptron);
+}

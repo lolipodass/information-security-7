@@ -39,7 +39,12 @@ impl NeuralNetwork {
         }
 
         for perceptron in self.layer.iter_mut() {
-            perceptron.train(x, tau_a, tau_b, self.rule);
+            perceptron.train(x, tau_a, self.rule);
+        }
+    }
+    pub fn show_matrix(&self) {
+        for perceptron in &self.layer {
+            println!("{:?}", perceptron.weights);
         }
     }
 }
